@@ -1,62 +1,69 @@
-const shoppingCart = {
-    items: [], // Массив товаров
-    total: 0,  // Общая стоимость товаров
-  
-    // Метод добавления товара в корзину
-    addItem: function(name, price, quantity) {
-      const item = {
-        name: name,
-        price: price,
-        quantity: quantity
-      };
+const EmployeeDB = {
+  employees: [],
 
-      this.items.push(item);
+  addEmployee(employee) {
+    this.employees.push(employee);
+  },
 
-      this.calculateTotal(); // Обновляем общую стоимость
-    },
-  
-    // Метод удаления товара из корзины по имени
-    removeItem: function(name) {
-      this.items = this.items.filter(item => item.name !== name);
+  removeEmployee(name) {
+    this.employees = this.employees.filter(employee => employee.name !== name);
+  },
 
-      this.calculateTotal(); // Обновляем общую стоимость
-    },
-  
-    // Метод обновления количества товара
-    updateQuantity: function(name, quantity) {
-      const item = this.items.find(item => item.name === name);
+  updateEmployee(name, newDetails) {
+    const index = this.employees.findIndex(employee => employee.name === name);
 
-      if (item) {
-        item.quantity = quantity;
+    if (index !== -1) {
+      this.employees[index] = { ...this.employees[index], ...newDetails };
+    }
+  },
 
-        this.calculateTotal(); // Обновляем общую стоимость
-      }
-    },
-  
-    // Метод вычисления общей стоимости товаров в корзине
-    calculateTotal: function() {
-      this.total = this.items.reduce((totalCost, item) => totalCost + item.price * item.quantity, 0);
-    },
-  
-    // Метод очистки корзины
-    clearCart: function() {
-      this.items = [];
-      this.total = 0;
-    },
-  
-    // Метод применения скидки
-    applyDiscount: function(discountCode) {
-      const discountRates = {
-        'DISCOUNT10': 0.1, // 10% скидка
-        'DISCOUNT20': 0.2  // 20% скидка
-      };
-      
-      const discount = discountRates[discountCode];
+  readEmployees() {
+    return this.employees;
+  },
 
-      if (discount) {
-        this.total = this.total * (1 - discount);
+  capitalizeNames() {
+    this.employees = this.employees.map(employee => ({
+      ...employee,
+      name: employee.name.split(' ')
+        .map(namePart => namePart.charAt(0).toUpperCase() + namePart.slice(1).toLowerCase())
+        .join(' ')
+    }));
+  },
+
+  lowercaseDepartments() {
+    this.employees = this.employees.map(employee => ({
+      ...employee,
+      department: employee.department.toLowerCase()
+    }));
+  },
+
+  cloneDB() {
+    return JSON.parse(JSON.stringify(this));
+  },
+
+  mergeDBs(otherDB) {
+    this.employees = [...this.employees, ...otherDB.employees];
+  },
+
+  printUniqueDepartments() {
+    const departments = new Set();
+
+    for (const employee of this.employees) {
+      departments.add(employee.department);
+    }
+
+    console.log([...departments]);
+  },
+
+  compareEmployees(employee1, employee2, fields) {
+    for (const field of fields) {
+      if (employee1[field] !== employee2[field]) {
+        return false;
       }
     }
-  };
+    
+    return true;
+  }
+};
 
-module.exports = shoppingCart
+module.exports = EmployeeDB

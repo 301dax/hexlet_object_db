@@ -1,59 +1,62 @@
-const shoppingCart = require('./index.js');
+const EmployeeDB = require('./index.js'); // Подключаем модуль с объектом EmployeeDB
 
-// Очищаем корзину перед каждым тестом
-beforeEach(() => {
-  shoppingCart.clearCart();
-});
+describe('EmployeeDB', () => {
+  beforeEach(() => {
+    EmployeeDB.employees = [];
+  });
 
+  test('Добавление сотрудника', () => {
+    EmployeeDB.addEmployee({ name: 'Иван Иванов', position: 'Developer', department: 'IT' });
+    expect(EmployeeDB.employees).toHaveLength(1);
+    expect(EmployeeDB.employees[0].name).toBe('Иван Иванов');
+  });
 
-test('Корзина пуста на старте', () => {
-  expect(shoppingCart.items).toEqual([]);
-  expect(shoppingCart.total).toBe(0);
-});
+  test('Удаление сотрудника по имени', () => {
+    EmployeeDB.addEmployee({ name: 'Иван Иванов', position: 'Developer', department: 'IT' });
+    EmployeeDB.removeEmployee('Иван Иванов');
+    expect(EmployeeDB.employees).toHaveLength(0);
+  });
 
-test('Добавляем товар', () => {
-  shoppingCart.addItem('Хлеб', 30, 1);
-  expect(shoppingCart.items.length).toBe(1);
-  expect(shoppingCart.total).toBe(30);
-});
+  test('Обновление информации о сотруднике', () => {
+    EmployeeDB.addEmployee({ name: 'Иванка Иванова', position: 'Designer', department: 'Creative' });
+    EmployeeDB.updateEmployee('Иванка Иванова', { position: 'Lead Designer' });
+    expect(EmployeeDB.employees[0].position).toBe('Lead Designer');
+  });
 
-test('Удаляем товар', () => {
-  shoppingCart.addItem('Хлеб', 30, 1);
-  shoppingCart.removeItem('Хлеб');
-  expect(shoppingCart.items).toEqual([]);
-  expect(shoppingCart.total).toBe(0);
-});
+  test('Капитализация имен сотрудников', () => {
+    EmployeeDB.addEmployee({ name: 'Иван Иванов', position: 'Developer', department: 'IT' });
+    EmployeeDB.capitalizeNames();
+    expect(EmployeeDB.employees[0].name).toBe('Иван Иванов');
+  });
 
-test('Обновляем кол-во товара, вычисляем стоймость при обновлении', () => {
-  shoppingCart.addItem('Молоко', 50, 1);
-  shoppingCart.updateQuantity('Молоко', 3);
-  const milk = shoppingCart.items.find(item => item.name === 'Молоко');
-  expect(milk.quantity).toBe(3);
-  expect(shoppingCart.total).toBe(150); // 50 * 3
-});
+  test('Приведение названий отделов к нижнему регистру', () => {
+    EmployeeDB.addEmployee({ name: 'Иванка Иванова', position: 'Designer', department: 'Creative' });
+    EmployeeDB.lowercaseDepartments();
+    expect(EmployeeDB.employees[0].department).toBe('creative');
+  });
 
-test('Вычисляем суммарную стоймость товаров', () => {
-  shoppingCart.addItem('Хлеб', 30, 1);
-  shoppingCart.addItem('Молоко', 50, 2);
-  expect(shoppingCart.total).toBe(130); // 30 + 50 * 2
-});
+  test('Клонирование базы данных сотрудников', () => {
+    EmployeeDB.addEmployee({ name: 'Алиса Селезнёва', position: 'HR Manager', department: 'HR' });
+    const clonedDB = EmployeeDB.cloneDB();
+    expect(clonedDB.employees).toEqual(EmployeeDB.employees);
+    expect(clonedDB.employees).not.toBe(EmployeeDB.employees); // Проверка, что это не один и тот же массив
+  });
 
-test('Очистка корзины', () => {
-  shoppingCart.addItem('Хлеб', 30, 1);
-  shoppingCart.addItem('Молоко', 50, 2);
-  shoppingCart.clearCart();
-  expect(shoppingCart.items).toEqual([]);
-  expect(shoppingCart.total).toBe(0);
-});
+  test('Слияние двух баз данных сотрудников', () => {
+    const otherDB = {
+      employees: [
+        { name: 'Сергей Посадов', position: 'Accountant', department: 'Finance' }
+      ]
+    };
+    EmployeeDB.addEmployee({ name: 'Алиса Селезнёва', position: 'HR Manager', department: 'HR' });
+    EmployeeDB.mergeDBs(otherDB);
+    expect(EmployeeDB.employees).toHaveLength(2);
+  });
 
-test('Применение валидной скидки', () => {
-  shoppingCart.addItem('Молоко', 50, 2); //  100
-  shoppingCart.applyDiscount('DISCOUNT10');
-  expect(shoppingCart.total).toBe(90); // 100 - 10% = 90
-});
-
-test('Битая скидка', () => {
-  shoppingCart.addItem('Молоко', 50, 2);
-  shoppingCart.applyDiscount('НИКАКИХСКИДОК');
-  expect(shoppingCart.total).toBe(100);
+  test('Сравнение сотрудников', () => {
+    const employee1 = { name: 'Алиса Селезнёва', department: 'HR' };
+    const employee2 = { name: 'Алиса Селезнёва', department: 'HR' };
+    const areEqual = EmployeeDB.compareEmployees(employee1, employee2, ['name', 'department']);
+    expect(areEqual).toBe(true);
+  });
 });
